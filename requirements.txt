@@ -1,5 +1,5 @@
 cached-property
 coloredlogs
 humanfriendly
-pip
+pip > 20.0
 setuptools
