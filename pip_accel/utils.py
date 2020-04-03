@@ -25,7 +25,7 @@ from pip_accel.compat import pathname2url, urljoin, WINDOWS
 
 # External dependencies.
 from humanfriendly import parse_path
-from pip.commands.uninstall import UninstallCommand
+from pip._internal.commands.uninstall import UninstallCommand
 
 # The following package(s) are usually bundled with pip but may be unbundled
 # by redistributors and pip-accel should handle this gracefully.

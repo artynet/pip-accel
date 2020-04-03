@@ -38,7 +38,7 @@ from pip_accel.utils import hash_files
 
 # External dependencies.
 from cached_property import cached_property
-from pip.req import InstallRequirement
+from pip._internal.req import InstallRequirement
 
 # The following package(s) are usually bundled with pip but may be unbundled
 # by redistributors and pip-accel should handle this gracefully.

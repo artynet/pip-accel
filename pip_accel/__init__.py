@@ -70,13 +70,13 @@ from pip_accel.utils import (
 
 # External dependencies.
 from humanfriendly import concatenate, Timer, pluralize
-from pip import basecommand as pip_basecommand_module
-from pip import index as pip_index_module
-from pip import wheel as pip_wheel_module
-from pip.commands.download import DownloadCommand
-from pip.commands.install import InstallCommand
-from pip.exceptions import DistributionNotFound
-from pip.req import InstallRequirement
+from pip._internal.cli import base_command as pip_basecommand_module
+from pip._internal.index import package_finder as pip_index_module
+from pip._internal.models import wheel as pip_wheel_module
+from pip._internal.commands.download import DownloadCommand
+from pip._internal.commands.install import InstallCommand
+from pip._internal.exceptions import DistributionNotFound
+from pip._internal.req import InstallRequirement
 
 # Semi-standard module versioning.
 __version__ = '0.43'
@@ -391,7 +391,7 @@ class PipAccelerator(object):
         """
         unpack_timer = Timer()
         logger.info("Unpacking distribution(s) ..")
-        with PatchedAttribute(pip_basecommand_module, 'PackageFinder', CustomPackageFinder):
+        with PatchedAttribute(pip_index_module, 'PackageFinder', CustomPackageFinder):
             requirements = self.get_pip_requirement_set(arguments, use_remote_index=False, use_wheels=use_wheels)
             logger.info("Finished unpacking %s in %s.", pluralize(len(requirements), "distribution"), unpack_timer)
             return requirements
@@ -722,10 +722,10 @@ class SetupRequiresPatch(object):
         """Enable caching of setup requirements (by patching the ``run_egg_info()`` method)."""
         if self.patch is None:
             created_links = self.created_links
-            original_method = InstallRequirement.run_egg_info
+            original_method = InstallRequirement.metadata
             shared_directory = self.config.eggs_cache
 
-            def run_egg_info_wrapper(self, *args, **kw):
+            def metadata_wrapper(self, *args, **kw):
                 # Heads up: self is an `InstallRequirement' object here!
                 link_name = os.path.join(self.source_dir, '.eggs')
                 try:
@@ -743,7 +743,7 @@ class SetupRequiresPatch(object):
                 return original_method(self, *args, **kw)
 
             # Install the wrapper method for the duration of the context manager.
-            self.patch = PatchedAttribute(InstallRequirement, 'run_egg_info', run_egg_info_wrapper)
+            self.patch = PatchedAttribute(InstallRequirement, 'metadata', metadata_wrapper)
             self.patch.__enter__()
 
     def __exit__(self, exc_type=None, exc_value=None, traceback=None):
